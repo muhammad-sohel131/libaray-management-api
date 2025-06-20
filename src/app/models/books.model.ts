@@ -1,6 +1,8 @@
 import mongoose, { Schema } from "mongoose";
+import bookInterface from "../interface/book.interface";
+import borrowInterface from "../interface/borrow.interface";
 
-const bookSchema = new Schema(
+const bookSchema = new Schema<bookInterface>(
     {
         title: {
             type: String,
@@ -39,7 +41,7 @@ const bookSchema = new Schema(
     }
 )
 
-const borrowSchema = new Schema(
+const borrowSchema = new Schema<borrowInterface>(
     {
         book: {
             type: mongoose.Schema.Types.ObjectId,
@@ -61,5 +63,5 @@ const borrowSchema = new Schema(
     }
 )
 
-export const Book = mongoose.model('book', bookSchema)
-export const Borrow = mongoose.model('borrow', borrowSchema)
+export const Book = mongoose.model('Book', bookSchema)
+export const Borrow = mongoose.model('Borrow', borrowSchema)

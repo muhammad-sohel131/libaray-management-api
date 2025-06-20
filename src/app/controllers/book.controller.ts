@@ -17,8 +17,8 @@ booksRoutes.post("/", async (req: Request, res: Response) => {
     };
 
     res.status(201).json(successMessage);
-  }catch (err: any) {
-     // Handle duplicate key error
+  } catch (err: any) {
+    // Handle duplicate key error
     if (err.name === "MongoServerError" && err.code === 11000) {
       const field = Object.keys(err.keyValue)[0];
       const value = err.keyValue[field];
@@ -72,3 +72,25 @@ booksRoutes.post("/", async (req: Request, res: Response) => {
   }
 });
 
+booksRoutes.get("/", async (req: Request, res: Response) => {
+  try {
+    const books = await Book.find();
+    const successMessage = {
+        success: true,
+        message: "Books retrieved successfully",
+        data: books
+    }
+    res.send(successMessage);
+  } catch (err: any) {
+    const errorMessage = {
+      message: "Internal server error",
+      success: false,
+      error: {
+        name: err.name,
+        message: err.message,
+      },
+    };
+    console.error(err);
+    res.status(500).json(errorMessage);
+  }
+});
