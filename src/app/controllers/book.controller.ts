@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import { Book } from "../models/books.model";
+import { Error, isValidObjectId } from "mongoose";
 
 export const booksRoutes = express.Router();
 interface queryParamInterface {
@@ -23,6 +24,7 @@ booksRoutes.post("/", async (req: Request, res: Response) => {
 
     res.status(201).json(successMessage);
   } catch (err: any) {
+
     // Handle duplicate key error
     if (err.name === "MongoServerError" && err.code === 11000) {
       const field = Object.keys(err.keyValue)[0];
@@ -100,13 +102,14 @@ booksRoutes.get("/", async (req: Request, res: Response) => {
       data: books,
     };
     res.send(successMessage);
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const error = err instanceof Error ? err : new Error("unknown error");
     const errorMessage = {
       message: "Internal server error",
       success: false,
       error: {
-        name: err.name,
-        message: err.message,
+        name: error.name,
+        message: error.message,
       },
     };
     console.error(err);
@@ -129,15 +132,51 @@ booksRoutes.get("/:bookId", async (req: Request, res: Response) => {
       success: true,
       data: book
     });
-  } catch (err: any) {
+  } catch (err: unknown) {
+    const error = err instanceof Error ? err : new Error("unknown error")
     const errorMessage = {
       message: "Internal server error",
       success: false,
       error: {
-        name: err.name,
-        message: err.message,
+        name: error.name,
+        message: error.message,
       },
     };
     res.status(500).json(errorMessage);
   }
 });
+
+booksRoutes.put("/:bookId", async (req: Request, res: Response) => {
+  try{
+    const bookId = req.params.bookId
+    if(!isValidObjectId(bookId)) res.status(400).json({
+      message: "Invalid Object ID",
+      success: false
+    })
+
+    const body = req.body;
+    const updatedBook = await Book.findByIdAndUpdate(bookId, body, {new: true})
+
+    if(!updatedBook) res.status(404).json({
+      message: "Book is not found to be updated",
+      success: false
+    })
+
+    res.json({
+      message: "Book updated successfully",
+      success: true,
+      data: updatedBook
+    })
+  }catch(err: unknown){
+    const error = err instanceof Error ? err : new Error("unknown error")
+    const errorMessage = {
+      message: "Internal server error",
+      success: false,
+      error: {
+        name: error.name,
+        message: error.message,
+      },
+    };
+    res.status(500).json(errorMessage);
+  }
+})
