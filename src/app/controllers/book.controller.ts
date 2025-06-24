@@ -3,10 +3,10 @@ import { Book } from "../models/books.model";
 
 export const booksRoutes = express.Router();
 interface queryParamInterface {
-  filter? : string,
-  sortBy? : string,
-  sort? : 'asc' | 'desc',
-  limit? : number
+  filter?: string;
+  sortBy?: string;
+  sort?: "asc" | "desc";
+  limit?: number;
 }
 
 booksRoutes.post("/", async (req: Request, res: Response) => {
@@ -79,19 +79,26 @@ booksRoutes.post("/", async (req: Request, res: Response) => {
 
 booksRoutes.get("/", async (req: Request, res: Response) => {
   try {
-    const queryOptions = req.query as queryParamInterface
-    const filterOption:any = {}
-    if(queryOptions.filter) filterOption.genre = queryOptions.filter
+    const queryOptions = req.query as queryParamInterface;
+    const filterOption: any = {};
+    if (queryOptions.filter) filterOption.genre = queryOptions.filter;
 
-    const sortBy = queryOptions.sortBy ? {[queryOptions.sortBy as string] : queryOptions.sort  ? queryOptions.sort : 'asc'} : {};
-  
+    const sortBy = queryOptions.sortBy
+      ? {
+          [queryOptions.sortBy as string]: queryOptions.sort
+            ? queryOptions.sort
+            : "asc",
+        }
+      : {};
 
-    const books = await Book.find(filterOption).sort(sortBy).limit(queryOptions.limit as number);
+    const books = await Book.find(filterOption)
+      .sort(sortBy)
+      .limit(queryOptions.limit as number);
     const successMessage = {
-        success: true,
-        message: "Books retrieved successfully",
-        data: books
-    }
+      success: true,
+      message: "Books retrieved successfully",
+      data: books,
+    };
     res.send(successMessage);
   } catch (err: any) {
     const errorMessage = {
@@ -103,6 +110,34 @@ booksRoutes.get("/", async (req: Request, res: Response) => {
       },
     };
     console.error(err);
+    res.status(500).json(errorMessage);
+  }
+});
+
+booksRoutes.get("/:bookId", async (req: Request, res: Response) => {
+  try {
+    const bookId = req.params.bookId;
+    const book = await Book.findById(bookId);
+    if(!book){
+      res.status(404).json({
+        message: "Book is not found for this ID",
+        success: false
+      })
+    }
+    res.json({
+      message: "Book retrieved successfully",
+      success: true,
+      data: book
+    });
+  } catch (err: any) {
+    const errorMessage = {
+      message: "Internal server error",
+      success: false,
+      error: {
+        name: err.name,
+        message: err.message,
+      },
+    };
     res.status(500).json(errorMessage);
   }
 });
