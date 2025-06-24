@@ -1,8 +1,13 @@
 import express, { Request, Response } from "express";
 import { Book } from "../models/books.model";
-import { Error } from "mongoose";
 
 export const booksRoutes = express.Router();
+interface queryParamInterface {
+  filter? : string,
+  sortBy? : string,
+  sort? : 'asc' | 'desc',
+  limit? : number
+}
 
 booksRoutes.post("/", async (req: Request, res: Response) => {
   try {
@@ -74,7 +79,14 @@ booksRoutes.post("/", async (req: Request, res: Response) => {
 
 booksRoutes.get("/", async (req: Request, res: Response) => {
   try {
-    const books = await Book.find();
+    const queryOptions = req.query as queryParamInterface
+    const filterOption:any = {}
+    if(queryOptions.filter) filterOption.genre = queryOptions.filter
+
+    const sortBy = queryOptions.sortBy ? {[queryOptions.sortBy as string] : queryOptions.sort  ? queryOptions.sort : 'asc'} : {};
+  
+
+    const books = await Book.find(filterOption).sort(sortBy).limit(queryOptions.limit as number);
     const successMessage = {
         success: true,
         message: "Books retrieved successfully",
