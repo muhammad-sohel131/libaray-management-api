@@ -1,9 +1,21 @@
-import mongoose from "mongoose";
+import mongoose, { Model } from "mongoose";
 
-interface borrowInterface {
-    book: mongoose.Schema.Types.ObjectId
-    quantity: number,
-    dueDate: Date
+interface borrowInterface{
+  book: mongoose.Schema.Types.ObjectId;
+  quantity: number;
+  dueDate: Date;
 }
 
-export default borrowInterface
+export interface BorrowModel extends Model<borrowInterface> {
+  getBorrowSummary(): Promise<
+    {
+      book: {
+        title: string;
+        isbn: string;
+      };
+      totalQuantity: number;
+    }[]
+  >;
+}
+
+export default borrowInterface;

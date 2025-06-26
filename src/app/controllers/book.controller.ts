@@ -14,12 +14,11 @@ booksRoutes.post("/", async (req: Request, res: Response) => {
   try {
     const body = req.body;
     const book = await Book.create(body);
-    const result = await book.save();
 
     const successMessage = {
       success: true,
       message: "Book created successfully",
-      data: result,
+      data: book,
     };
 
     res.status(201).json(successMessage);

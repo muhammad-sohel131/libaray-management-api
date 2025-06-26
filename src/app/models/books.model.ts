@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import bookInterface from "../interface/book.interface";
-import borrowInterface from "../interface/borrow.interface";
+import borrowInterface, { BorrowModel } from "../interface/borrow.interface";
 
 const bookSchema = new Schema<bookInterface>(
     {
@@ -63,5 +63,42 @@ const borrowSchema = new Schema<borrowInterface>(
     }
 )
 
+
+borrowSchema.statics.getBorrowSummary = async function () {
+    const summary = await Borrow.aggregate([
+      {
+        $group: {
+          _id: "$book",
+          totalQuantity: {
+            $sum: "$quantity",
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "books",
+          localField: "_id",
+          foreignField: "_id",
+          as: 'bookDetails'
+        },
+      },
+      {
+        $unwind: '$bookDetails'
+      },
+      {
+        $project: {
+            _id: 0,
+            book: {
+                title: '$bookDetails.title',
+                isbn: '$bookDetails.isbn'
+            },
+            totalQuantity: 1
+        }
+      }
+    ]);
+
+    return summary
+} 
+
 export const Book = mongoose.model('Book', bookSchema)
-export const Borrow = mongoose.model('Borrow', borrowSchema)
+export const Borrow = mongoose.model<borrowInterface, BorrowModel>('Borrow', borrowSchema)
