@@ -100,5 +100,17 @@ borrowSchema.statics.getBorrowSummary = async function () {
     return summary
 } 
 
+bookSchema.pre('findOneAndUpdate', function (next) {
+  console.log("Book is being updated....");
+  next();
+});
+
+bookSchema.post('findOneAndUpdate', function (doc) {
+  if (doc) {
+    console.log(`Book updated: ${doc.title}`);
+  }
+});
+
+
 export const Book = mongoose.model('Book', bookSchema)
 export const Borrow = mongoose.model<borrowInterface, BorrowModel>('Borrow', borrowSchema)

@@ -152,6 +152,7 @@ booksRoutes.put("/:bookId", async (req: Request, res: Response) => {
         message: "Invalid Object ID",
         success: false,
       });
+      return
     }
 
     const body = req.body;
@@ -164,6 +165,7 @@ booksRoutes.put("/:bookId", async (req: Request, res: Response) => {
         message: "Book is not found to be updated",
         success: false,
       });
+      return
     }
 
     res.json({
