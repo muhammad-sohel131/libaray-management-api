@@ -1,12 +1,21 @@
 import express, { Request, Response } from "express";
 import { Book, Borrow } from "../models/books.model";
 import borrowInterface from "../interface/borrow.interface";
+import { isValidObjectId } from "mongoose";
 
 export const borrowRoutes = express.Router();
 
 borrowRoutes.post("/", async (req: Request, res: Response) => {
   try {
     const body = req.body as borrowInterface;
+
+    if (!isValidObjectId(body.book)) {
+      res.status(400).json({
+        message: "Invalid Object ID",
+        success: false,
+      });
+      return;
+    }
 
     const book = await Book.findById(body.book);
     if (!book) {
@@ -61,12 +70,12 @@ borrowRoutes.post("/", async (req: Request, res: Response) => {
 
 borrowRoutes.get("/", async (req: Request, res: Response) => {
   try {
-    const borrows = await Borrow.getBorrowSummary()
+    const borrows = await Borrow.getBorrowSummary();
 
     res.json({
-        message: "Borrowed books summary retrieved successfully",
-        success: true,
-        data: borrows
+      message: "Borrowed books summary retrieved successfully",
+      success: true,
+      data: borrows,
     });
   } catch (error) {
     const err = error instanceof Error ? error : new Error("unknown error");

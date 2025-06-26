@@ -118,6 +118,13 @@ booksRoutes.get("/", async (req: Request, res: Response) => {
 booksRoutes.get("/:bookId", async (req: Request, res: Response) => {
   try {
     const bookId = req.params.bookId;
+    if (!isValidObjectId(bookId)) {
+      res.status(400).json({
+        message: "Invalid Object ID",
+        success: false,
+      });
+      return;
+    }
     const book = await Book.findById(bookId);
     if (!book) {
       res.status(404).json({
@@ -152,7 +159,7 @@ booksRoutes.put("/:bookId", async (req: Request, res: Response) => {
         message: "Invalid Object ID",
         success: false,
       });
-      return
+      return;
     }
 
     const body = req.body;
@@ -165,7 +172,7 @@ booksRoutes.put("/:bookId", async (req: Request, res: Response) => {
         message: "Book is not found to be updated",
         success: false,
       });
-      return
+      return;
     }
 
     res.json({
@@ -195,16 +202,16 @@ booksRoutes.delete("/:bookId", async (req: Request, res: Response) => {
         message: "Invalid Object ID",
         success: false,
       });
-      return
+      return;
     }
 
     const deletedBook = await Book.findByIdAndDelete(bookId);
     if (!deletedBook) {
-     res.status(404).json({
+      res.status(404).json({
         message: "Book is not found to be delete",
         success: false,
       });
-      return
+      return;
     }
 
     res.json({
