@@ -17,7 +17,9 @@ app.use('/api/books', booksRoutes)
 app.use('/api/borrow', borrowRoutes)
 
 app.get('/', (req: Request, res: Response) => {
-    res.send("Welcome to our library Api")
+    res.json({
+        message: 'Welcome to Library Management API'
+    })
 })
 
 export default app
