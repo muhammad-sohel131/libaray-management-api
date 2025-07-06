@@ -3,6 +3,7 @@ import { Book } from "../models/books.model";
 import { Error, isValidObjectId } from "mongoose";
 
 export const booksRoutes = express.Router();
+
 interface queryParamInterface {
   filter?: string;
   sortBy?: string;
@@ -23,7 +24,6 @@ booksRoutes.post("/", async (req: Request, res: Response) => {
 
     res.status(201).json(successMessage);
   } catch (err: any) {
-    // Handle duplicate key error
     if (err.name === "MongoServerError" && err.code === 11000) {
       const field = Object.keys(err.keyValue)[0];
       const value = err.keyValue[field];
@@ -51,7 +51,6 @@ booksRoutes.post("/", async (req: Request, res: Response) => {
       res.status(400).json(errorMessage);
     }
 
-    // Handle other Mongoose validation errors
     if (err.name === "ValidationError") {
       const errorMessage = {
         message: "Validation failed",
@@ -63,7 +62,7 @@ booksRoutes.post("/", async (req: Request, res: Response) => {
       };
       res.status(400).json(errorMessage);
     }
-    // Fallback for other errors
+
     const errorMessage = {
       message: "Internal server error",
       success: false,
@@ -118,6 +117,7 @@ booksRoutes.get("/", async (req: Request, res: Response) => {
 booksRoutes.get("/:bookId", async (req: Request, res: Response) => {
   try {
     const bookId = req.params.bookId;
+
     if (!isValidObjectId(bookId)) {
       res.status(400).json({
         message: "Invalid Object ID",
@@ -154,6 +154,7 @@ booksRoutes.get("/:bookId", async (req: Request, res: Response) => {
 booksRoutes.put("/:bookId", async (req: Request, res: Response) => {
   try {
     const bookId = req.params.bookId;
+    
     if (!isValidObjectId(bookId)) {
       res.status(400).json({
         message: "Invalid Object ID",
