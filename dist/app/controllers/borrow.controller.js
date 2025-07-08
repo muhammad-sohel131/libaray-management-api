@@ -15,10 +15,18 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.borrowRoutes = void 0;
 const express_1 = __importDefault(require("express"));
 const books_model_1 = require("../models/books.model");
+const mongoose_1 = require("mongoose");
 exports.borrowRoutes = express_1.default.Router();
 exports.borrowRoutes.post("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const body = req.body;
+        if (!(0, mongoose_1.isValidObjectId)(body.book)) {
+            res.status(400).json({
+                message: "Invalid Object ID",
+                success: false,
+            });
+            return;
+        }
         const book = yield books_model_1.Book.findById(body.book);
         if (!book) {
             res.status(404).json({
@@ -68,41 +76,11 @@ exports.borrowRoutes.post("/", (req, res) => __awaiter(void 0, void 0, void 0, f
 }));
 exports.borrowRoutes.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const borrows = yield books_model_1.Borrow.aggregate([
-            {
-                $group: {
-                    _id: "$book",
-                    totalQuantity: {
-                        $sum: "$quantity",
-                    },
-                },
-            },
-            {
-                $lookup: {
-                    from: "books",
-                    localField: "_id",
-                    foreignField: "_id",
-                    as: 'bookDetails'
-                },
-            },
-            {
-                $unwind: '$bookDetails'
-            },
-            {
-                $project: {
-                    _id: 0,
-                    book: {
-                        title: '$bookDetails.title',
-                        isbn: '$bookDetails.isbn'
-                    },
-                    totalQuantity: 1
-                }
-            }
-        ]);
+        const borrows = yield books_model_1.Borrow.getBorrowSummary();
         res.json({
             message: "Borrowed books summary retrieved successfully",
             success: true,
-            data: borrows
+            data: borrows,
         });
     }
     catch (error) {

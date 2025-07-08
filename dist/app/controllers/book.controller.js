@@ -21,16 +21,14 @@ exports.booksRoutes.post("/", (req, res) => __awaiter(void 0, void 0, void 0, fu
     try {
         const body = req.body;
         const book = yield books_model_1.Book.create(body);
-        const result = yield book.save();
         const successMessage = {
             success: true,
             message: "Book created successfully",
-            data: result,
+            data: book,
         };
         res.status(201).json(successMessage);
     }
     catch (err) {
-        // Handle duplicate key error
         if (err.name === "MongoServerError" && err.code === 11000) {
             const field = Object.keys(err.keyValue)[0];
             const value = err.keyValue[field];
@@ -56,7 +54,6 @@ exports.booksRoutes.post("/", (req, res) => __awaiter(void 0, void 0, void 0, fu
             };
             res.status(400).json(errorMessage);
         }
-        // Handle other Mongoose validation errors
         if (err.name === "ValidationError") {
             const errorMessage = {
                 message: "Validation failed",
@@ -68,7 +65,6 @@ exports.booksRoutes.post("/", (req, res) => __awaiter(void 0, void 0, void 0, fu
             };
             res.status(400).json(errorMessage);
         }
-        // Fallback for other errors
         const errorMessage = {
             message: "Internal server error",
             success: false,
@@ -121,6 +117,13 @@ exports.booksRoutes.get("/", (req, res) => __awaiter(void 0, void 0, void 0, fun
 exports.booksRoutes.get("/:bookId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const bookId = req.params.bookId;
+        if (!(0, mongoose_1.isValidObjectId)(bookId)) {
+            res.status(400).json({
+                message: "Invalid Object ID",
+                success: false,
+            });
+            return;
+        }
         const book = yield books_model_1.Book.findById(bookId);
         if (!book) {
             res.status(404).json({
@@ -155,6 +158,7 @@ exports.booksRoutes.put("/:bookId", (req, res) => __awaiter(void 0, void 0, void
                 message: "Invalid Object ID",
                 success: false,
             });
+            return;
         }
         const body = req.body;
         const updatedBook = yield books_model_1.Book.findByIdAndUpdate(bookId, body, {
@@ -165,6 +169,7 @@ exports.booksRoutes.put("/:bookId", (req, res) => __awaiter(void 0, void 0, void
                 message: "Book is not found to be updated",
                 success: false,
             });
+            return;
         }
         res.json({
             message: "Book updated successfully",
